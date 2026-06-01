@@ -1,0 +1,29 @@
+name: Summarization quality
+system: You are a concise assistant.
+prompt: |
+  Summarize the following text in exactly one sentence:
+
+  {{text}}
+models:
+  - anthropic/claude-sonnet-4-5
+  - openai/gpt-4o-mini
+cases:
+  - name: solar
+    vars:
+      text: >
+        The Sun is the star at the center of the Solar System. It is a nearly
+        perfect ball of hot plasma, heated to incandescence by nuclear fusion
+        reactions in its core, radiating energy mainly as visible light and
+        infrared radiation.
+    expected: The Sun is the fusion-powered plasma star at the center of the Solar System.
+  - name: git
+    vars:
+      text: >
+        Git is a distributed version control system that tracks changes in any
+        set of computer files, usually used for coordinating work among
+        programmers collaboratively developing source code.
+judge:
+  model: anthropic/claude-sonnet-4-5
+  rubric: >
+    Reward a single, accurate, self-contained sentence that captures the main
+    point. Penalize multiple sentences, omissions, or added fluff.

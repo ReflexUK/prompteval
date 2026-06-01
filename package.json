@@ -1,0 +1,51 @@
+{
+  "name": "prompteval",
+  "version": "0.1.0",
+  "description": "A tiny prompt evaluation harness: run one prompt across many models, then score and compare the outputs with an LLM judge.",
+  "type": "module",
+  "bin": {
+    "prompteval": "dist/cli.js"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/cli.ts",
+    "test": "node --import tsx --test test/*.test.ts",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "llm",
+    "eval",
+    "evaluation",
+    "prompt",
+    "prompt-engineering",
+    "openai",
+    "anthropic",
+    "benchmark",
+    "ai",
+    "cli"
+  ],
+  "author": "ReflexUK",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "yaml": "^2.6.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ReflexUK/prompteval.git"
+  }
+}
