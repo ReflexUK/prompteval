@@ -27,6 +27,8 @@ export interface Suite {
   judge?: {
     model: string;
     rubric: string;
+    /** Minimum acceptable score (1-10). Cells below this are marked as failing. */
+    minScore?: number;
   };
 }
 
@@ -79,6 +81,12 @@ export function validateSuite(obj: unknown): Suite {
     ) {
       throw new Error("Suite.judge must have { model: string, rubric: string }");
     }
+    if (s.judge.minScore !== undefined) {
+      const ms = Number(s.judge.minScore);
+      if (!Number.isFinite(ms) || ms < 1 || ms > 10) {
+        throw new Error("Suite.judge.minScore must be a number between 1 and 10");
+      }
+    }
   }
 
   return {
@@ -87,7 +95,14 @@ export function validateSuite(obj: unknown): Suite {
     system: typeof s.system === "string" ? s.system : undefined,
     models: s.models,
     cases,
-    judge: s.judge,
+    judge: s.judge
+      ? {
+          model: s.judge.model,
+          rubric: s.judge.rubric,
+          minScore:
+            s.judge.minScore !== undefined ? Number(s.judge.minScore) : undefined,
+        }
+      : undefined,
   };
 }
 
