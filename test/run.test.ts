@@ -12,7 +12,6 @@ const suite = validateSuite({
   judge: { model: "openai/judge", rubric: "good" },
 });
 
-// Deterministic fake completion: judge returns a fixed score, models echo.
 function makeComplete() {
   let t = 0;
   const complete = async (model: string, prompt: string) => {
@@ -23,7 +22,7 @@ function makeComplete() {
   return { complete, now };
 }
 
-test("runSuite produces a cell per case × model", async () => {
+test("runSuite produces a cell per case x model", async () => {
   const { complete, now } = makeComplete();
   const result = await runSuite(suite, { complete, now });
   assert.equal(result.cells.length, 4);
@@ -56,11 +55,20 @@ test("scoreByModel averages across cases", async () => {
   assert.equal(avg.get("anthropic/b"), 7);
 });
 
+test("scoreByModel returns null for models with no scored cells", async () => {
+  const result = {
+    suite: "x",
+    cells: [{ model: "openai/a", caseName: "c1", output: "hi", score: null, ms: 1 }],
+  };
+  const avg = scoreByModel(result);
+  assert.equal(avg.get("openai/a"), null);
+});
+
 test("renderMarkdown includes leaderboard when judged", async () => {
   const { complete, now } = makeComplete();
   const result = await runSuite(suite, { complete, now });
   const md = renderMarkdown(result, { hasJudge: true });
-  assert.ok(md.includes("# prompteval — t"));
+  assert.ok(md.includes("# prompteval"));
   assert.ok(md.includes("Leaderboard"));
   assert.ok(md.includes("| Rank | Model | Avg score |"));
   assert.ok(md.includes("`openai/a`"));
@@ -71,4 +79,21 @@ test("renderMarkdown omits leaderboard without judge", () => {
   const md = renderMarkdown(result, { hasJudge: false });
   assert.ok(!md.includes("Leaderboard"));
   assert.ok(md.includes("## Results"));
+});
+
+test("renderMarkdown shows PASS/FAIL when minScore is set", async () => {
+  const { complete, now } = makeComplete(); // judge always returns 7
+  const result = await runSuite(suite, { complete, now });
+  const mdPass = renderMarkdown(result, { hasJudge: true, minScore: 5 });
+  assert.ok(mdPass.includes("PASS"), "expected PASS for score 7 >= minScore 5");
+
+  const mdFail = renderMarkdown(result, { hasJudge: true, minScore: 9 });
+  assert.ok(mdFail.includes("FAIL"), "expected FAIL for score 7 < minScore 9");
+});
+
+test("renderMarkdown includes threshold summary line", async () => {
+  const { complete, now } = makeComplete();
+  const result = await runSuite(suite, { complete, now });
+  const md = renderMarkdown(result, { hasJudge: true, minScore: 9 });
+  assert.ok(md.includes("below minScore threshold"));
 });
